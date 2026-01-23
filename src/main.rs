@@ -5,14 +5,14 @@ mod rl;
 use rl::{create_editor, ReadlineError};
 use colored::Colorize;
 use whoami::username;
-use whoami::hostname;
+//use whoami::hostname;
 
 fn main() {
     let mut rl = create_editor().expect("Failed to create editor");
     let mut conversation: String;
 
     loop {
-        conversation = format!("{}@{} {} $ ", username(), hostname(), dir::getdir().green().bold());
+        conversation = format!("{} {} $ ", username(), /*hostname(),*/ dir::getdir().green().bold());
         match rl.readline(&conversation) {
             Ok(line) => {
                 let _ = rl.add_history_entry(&line);
