@@ -47,8 +47,14 @@ pub fn create_editor() -> rustyline::Result<ShellEditor> {
     rl.set_helper(Some(helper));
 
     /* LOAD HISTORY */
-    let _ = rl.load_history(".ish_history");
+    let _ = rl.load_history(&get_history_path());
 
     Ok(rl)
 }
 
+use std::path::PathBuf;
+pub fn get_history_path() -> PathBuf {
+    dirs::home_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join(".ish_history")
+}

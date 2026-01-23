@@ -3,12 +3,17 @@ mod ex;
 mod rl;
 
 use rl::{create_editor, ReadlineError};
+use colored::Colorize;
+use whoami::username;
+use whoami::hostname;
 
 fn main() {
     let mut rl = create_editor().expect("Failed to create editor");
+    let mut conversation: String;
 
     loop {
-        match rl.readline(&format!("{}$ ", dir::getdir())) {
+        conversation = format!("{}@{} {} $ ", username(), hostname(), dir::getdir().green().bold());
+        match rl.readline(&conversation) {
             Ok(line) => {
                 let _ = rl.add_history_entry(&line);
 
@@ -21,7 +26,7 @@ fn main() {
                         "cd" => Ok(dir::chdir(inp.get(1).map_or(&"~".to_string(), |s| s))),
                         "exit" => break,
                         _ => ex::ex(&inp)
-                };
+                    };
                 }
             }
             Err(ReadlineError::Interrupted) => continue,
@@ -30,5 +35,5 @@ fn main() {
         }
     }
 
-    let _ = rl.save_history(".ish_history");
+    let _ = rl.save_history(&rl::get_history_path());
 }

@@ -5,3 +5,6 @@ edition = "2024"
 
 [dependencies]
 rustyline = "14"
+colored   = "2"
+dirs      = "5"
+whoami    = "1.5"
