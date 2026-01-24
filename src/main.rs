@@ -11,18 +11,21 @@ fn main() {
     let mut rl = create_editor().expect("Failed to create editor");
     let mut conversation: String;
 
+    let mut lastdir: String = dir::getdir();
+    let home = std::env::var("HOME").expect("No HOME path");
+
     loop {
-        conversation = format!("{}@{} {} $ ", username(), hostname().unwrap_or_else(|_| "?".to_string()), dir::getdir().green().bold());
+        conversation = format!("{}@{} {} ❯ ", username(), hostname().unwrap_or_else(|_| "?".to_string()), dir::getdir().green().bold());
         match rl.readline(&conversation) {
             Ok(line) => {
                 let _ = rl.add_history_entry(&line);
 
                 let inp: Vec<String> = line.split_whitespace()
-                    .map(|s: &str| s.to_owned())
+                    .map(|s: &str| s.to_owned().replace("~", &home))
                     .collect();
 
                 if inp.len() > 0 {
-                    let _ = ex::run_command(&inp);
+                    let _ = ex::run_command(&inp, &mut lastdir);
                 }
             }
             Err(ReadlineError::Interrupted) => continue,

@@ -1,12 +1,12 @@
 use crate::dir;
 use std::process::Command;
 
-pub fn run_command(com: &Vec<String>) -> std::io::Result<()> {
+pub fn run_command(com: &Vec<String>, lastdir: &mut String) -> std::io::Result<()> {
     let coms: Vec<Vec<String>> = split_by_seps(&com);
 
     for c in coms {
         let _ = match c[0].as_str() {
-            "cd" => Ok(dir::chdir(c.get(1).map_or(&"~".to_string(), |s| s))),
+            "cd" => Ok(dir::chdir(c.get(1).map_or(&"~".to_string(), |s| s), lastdir)),
             _    => ex(c),
         };
     }
