@@ -6,3 +6,4 @@ autocompletions
 history navigations with arrows  
 ~, - shortcuts  
 history command  
+&& separator  

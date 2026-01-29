@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -14,13 +13,14 @@
 #define out std::cout
 #define in  std::cin
 
-extern str         getcwd(void);
-extern str         gethm(void);
-extern vec<str>    split(char *s, char sep);
-extern str         rep(std::string s, const char *old, const char *new_);
-extern int         ex(const vec<str>&);
-extern int         cd(const str);
-extern int         history(const char *histdir, size_t n=1000);
+extern str           getcwd(void);
+extern str           gethm(void);
+extern vec<str>      split(char *s, char sep);
+extern vec<vec<str>> split(vec<str> ss, str sep);
+extern str           rep(str s, const char *old, const char *new_);
+extern int           ex(const vec<str>&);
+extern int           cd(const str);
+extern int           history(const char *histdir, size_t n=1000);
 
 #define YELLOW   "\x1b[33m"
 #define WHITE    "\x1b[37m"
@@ -43,7 +43,9 @@ void sigint_handler(int sig) {
 int
 main(void)
 {
-  vec<str> com;
+  /* INIT */
+  vec<vec<str>> coms;
+  vec<str> clean_keywords;
   str cwd, lastdir = ".";
   char *inp;
 
@@ -59,23 +61,30 @@ main(void)
     /* GET INPUT */
     inp = readline(CONV);
     if (!inp) {std::cout << "\n"; break;}  /* Ctrl+D */
-    if (*inp) add_history(inp); /* HISTORY */
+    if (*inp) {add_history(inp);} /* HISTORY */
 
     /* GET CLEAN COMMAND */
-    com = split(inp, ' ');
-    free(inp);
-    for (str &s : com) s = rep(  rep(s, "~", gethm().c_str())  , "-", lastdir.c_str()); 
+    clean_keywords = split(inp, ' '); free(inp);
+    for (str &s : clean_keywords) {
+      s = rep(s, "~", gethm().c_str()); /* ~ -> HOME variable */
+      s = rep(s, "-", lastdir.c_str()); /* - -> old directory */
+    }
+    coms = split(clean_keywords, "&&");
 
-    /* NO PROMPT */
-    if (com.size() == 0) continue;
+    /* RUN COMMANDS */
+    for (vec<str> com : coms) {
+      /* NO PROMPT */
+      if (com.size() == 0) continue;
 
-    /* RUN */
-    if (com[0] == "cd")           {lastdir = getcwd(); cd((com.size() != 1) ? com[1]:gethm());}
-    else if (com[0] == "history") {if (com.size() > 1) history(HISTDIR, atoi(com[1].c_str())); else history(HISTDIR);}
-    else if (com[0] == "exit")    {break;}
-    else                          {ex(com);}
+      /* RUN */
+      if (com[0] == "cd")           {lastdir = getcwd(); cd((com.size() != 1) ? com[1]:gethm());}
+      else if (com[0] == "history") {if (com.size() > 1) history(HISTDIR, atoi(com[1].c_str())); else history(HISTDIR);}
+      else if (com[0] == "exit")    {goto end;}
+      else                          {ex(com);}
+    }
   }
-  write_history(HISTDIR);
 
+end:
+  write_history(HISTDIR);
   return 0;
 }

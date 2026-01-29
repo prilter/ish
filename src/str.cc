@@ -1,25 +1,41 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::string> 
+#define vec std::vector
+#define str std::string
+
+vec<str> 
 split(char *s, char sep) 
 {
-  std::vector<std::string> tokens;
+  vec<str> tokens;
   std::stringstream ss(s);
-  std::string token;
+  str token;
 
-  while (std::getline(ss, token, sep)) {
+  while (std::getline(ss, token, sep))
     tokens.push_back(token);
-  }
 
   return tokens;
 }
 
-#include <cstring>
-std::string
-rep(std::string s, const char *old, const char *new_)
+vec<vec<str>>
+split(vec<str> ss, str sep) 
 {
-  if (s.find(old) != std::string::npos)
+  vec<vec<str>> r = {{}};
+  size_t i = 0;
+
+  for (str s : ss) {
+    if (s != sep) {r[i].push_back(s);}
+    else          {r.push_back({}), i += 1;}
+  }
+
+  return r;
+}
+
+#include <cstring>
+str
+rep(str s, const char *old, const char *new_)
+{
+  if (s.find(old) != str::npos)
     s.replace(s.find(old), s.find(old) + strlen(old), new_);
   return s;
 }
