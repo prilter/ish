@@ -1,9 +1,6 @@
 # ish
-Simple shell written by Rust programming language  
+Simple shell written by C++ programming language  
 
 # Features  
 autocompletions  
 history navigations with arrows  
-&&, ; separators  
-\ merger  
-~, - shortcuts(2-nd is not ideal)  
