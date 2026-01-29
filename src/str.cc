@@ -15,3 +15,11 @@ split(char *s, char sep)
   return tokens;
 }
 
+#include <cstring>
+std::string
+rep(std::string s, const char *old, const char *new_)
+{
+  if (s.find(old) != std::string::npos)
+    s.replace(s.find(old), s.find(old) + strlen(old), new_);
+  return s;
+}

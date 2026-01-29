@@ -12,7 +12,7 @@ release:
 	mv *.o bin/objs
 	g++ bin/objs/*.o -o bin/release/ish -lreadline
 
-run: comp
+run: build
 	./bin/debug/ish
 
 
