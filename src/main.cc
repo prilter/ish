@@ -2,6 +2,9 @@
 #include <vector>
 #include <iostream>
 
+#include <cstdlib>
+#include <csignal>
+
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -20,14 +23,36 @@ extern int         cd(const str);
 #define WHITE    "\x1b[37m"
 #define HISTDIR  ".ish_history"
 
+/* FLAG FOR HANDLING C-C */
+volatile sig_atomic_t interrupted = 0;
+void sigint_handler(int sig) {
+    interrupted = 1;
+    
+    rl_replace_line("", 0); /* CLEAN CURRENT LINE FOR readline */
+    std::cout << "\n"; /* MOVE CURSOR TO NEW LINE */
+    
+    /* REDRAW PROMPT */
+    rl_on_new_line();
+    rl_redisplay();
+}
+
 int
 main(void)
 {
   vec<str> com;
   char *inp;
 
+  /* SETTINGS OF SIGNAL HANDLER */
+  struct sigaction sa;
+  sa.sa_handler = sigint_handler;
+  sa.sa_flags = 0;
+  sigemptyset(&sa.sa_mask);
+  sigaction(SIGINT, &sa, nullptr);
+
   read_history(HISTDIR);
   for (str cwd = getcwd();; cwd = getcwd()) {
+    interrupted = 0;
+
     /* GET INPUT */
     inp = readline((YELLOW + cwd + WHITE + "❯ ").c_str());
     if (!inp) {std::cout << "\n"; break;}  /* Ctrl+D */

@@ -1,4 +1,4 @@
-comp:
+build:
 	g++ src/*.cc -c -lreadline
 	mkdir bin bin/debug bin/release bin/objs -p
 	rm bin/objs/*
