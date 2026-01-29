@@ -5,3 +5,4 @@ Simple shell written by C++ programming language
 autocompletions  
 history navigations with arrows  
 ~, - shortcuts  
+history command  

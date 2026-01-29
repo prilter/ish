@@ -1,12 +1,15 @@
+/* INCLUDES */
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <vector>
 #include <string>
 
+/* MACROSES */
 #define vec std::vector
 #define str std::string
 
+/* EXECUTE */
 int
 ex(const vec<str>& args)
 {
@@ -35,3 +38,23 @@ ex(const vec<str>& args)
   return 0;
 }
 
+/* HISTORY */
+#include <readline/history.h>
+int
+history(const char *histdir, size_t n=1000)
+{
+  /* INIT */
+  HIST_ENTRY** hist = history_list();
+  size_t histlen = 0;
+
+  if (!hist) { std::cout << "No history\n"; return 0; } /* NO HISTORY */
+  for (;hist[histlen];) histlen++; /* COUNT LENGTH */
+  if (histlen < n) n = histlen; /* CHECK n */
+
+  /* OUTPUT */
+  for (size_t i = histlen - n; n--; ++i)
+    std::cout << i + 1 << "\t" << hist[i]->line << '\n';
+
+  /* END */
+  return 1;
+}

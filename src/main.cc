@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -19,6 +20,7 @@ extern vec<str>    split(char *s, char sep);
 extern str         rep(std::string s, const char *old, const char *new_);
 extern int         ex(const vec<str>&);
 extern int         cd(const str);
+extern int         history(const char *histdir, size_t n=1000);
 
 #define YELLOW   "\x1b[33m"
 #define WHITE    "\x1b[37m"
@@ -52,10 +54,8 @@ main(void)
   sigemptyset(&sa.sa_mask);
   sigaction(SIGINT, &sa, nullptr);
 
+  read_history(HISTDIR);
   for (cwd = getcwd();; cwd = getcwd()) {
-    /* READ HISTORY */
-    read_history(HISTDIR);
-
     /* GET INPUT */
     inp = readline(CONV);
     if (!inp) {std::cout << "\n"; break;}  /* Ctrl+D */
@@ -69,14 +69,13 @@ main(void)
     /* NO PROMPT */
     if (com.size() == 0) continue;
 
-    /* CD */
+    /* RUN */
     if (com[0] == "cd")           {lastdir = getcwd(); cd((com.size() != 1) ? com[1]:gethm());}
+    else if (com[0] == "history") {if (com.size() > 1) history(HISTDIR, atoi(com[1].c_str())); else history(HISTDIR);}
     else if (com[0] == "exit")    {break;}
     else                          {ex(com);}
-
-    /* SAVE HISTORY */
-    write_history(HISTDIR);
   }
+  write_history(HISTDIR);
 
   return 0;
 }
