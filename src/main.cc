@@ -54,13 +54,15 @@ main(void)
     /* GET CLEAN COMMAND */
     clean_keywords = inp; free(inp);
     clean_keywords = rep(clean_keywords, "~", gethm()); /* ~ -> HOME variable */
-    clean_keywords = rep(clean_keywords, "-", lastdir.c_str()); /* ~ -> HOME variable */
     clean_keywords = rep(clean_keywords, "; ", " && ");         /* ; -> && */
     clean_keywords = rep(clean_keywords, ";", " && ");          /* ; -> && */
 
-    coms = split(split(clean_keywords.c_str(), ' '), "&&");
+    /* GET ARGS(+ "-" -> lastdir) */
+    vec<str> args = split(clean_keywords.c_str(), ' ');
+    for (str &s : args) if (s == "-") s = lastdir;
 
     /* RUN COMMANDS */
+    coms = split(args, "&&");
     for (vec<str> com : coms) {
       /* NO PROMPT */
       if (com.size() == 0) continue;
