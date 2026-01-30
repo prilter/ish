@@ -8,9 +8,9 @@ str getcwd(void) { return std::filesystem::current_path().string(); }
 
 /* GET HOME */
 #include <cstdlib>
-std::string gethm(void) {
+const char *gethm(void) {
     const char *home = std::getenv("HOME");
-    return (home ? str(home):str("~"));
+    return (home ? home:"~");
 }
 
 /* CD */

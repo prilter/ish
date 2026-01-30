@@ -90,7 +90,7 @@ int ex(const vec<str> &com) {
 
 /* HISTORY */
 #include <readline/history.h>
-  int
+int
 history(const char *histdir, size_t n=1000)
 {
   /* INIT */
