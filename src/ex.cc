@@ -2,45 +2,95 @@
 #include <iostream>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 /* MACROSES */
 #define vec std::vector
 #define str std::string
 
 /* EXECUTE */
-int
-ex(const vec<str>& args)
-{
-  pid_t pid = fork();
+extern vec<vec<str>> split(vec<str> ss, str sep);
+int ex(const vec<str> &com) {
+  vec<vec<str>> coms = split(com, "|"); /* SPLIT BY PIPES */
 
-  if (pid == 0) {  /* CHILD PROCESS */
-    /* vec<str> -> char *argv[] */
-    std::vector<char*> argv;
-    for (const auto& arg : args)
-      argv.push_back(const_cast<char*>(arg.c_str()));
-    argv.push_back(nullptr);  // NULL-terminated
+  if (coms.empty())
+    return 0;
 
-    /* RUN COMMAND */
-    execvp(argv[0], argv.data());
+  /* ANALY PIPELINE */
+  int comslen = coms.size();
+  vec<int> pids;
+  int input_fd = STDIN_FILENO;
 
-    /* ERROR OUTPUT */
-    std::cerr << "Failed to execute: " << argv[0] << std::endl;
-    _exit(EXIT_FAILURE);
-  } else if (pid > 0) {  /* PARRENT PROCESS */
-    int status;
-    waitpid(pid, &status, 0);
-  } else {
-    std::cerr << "Fork failed!" << std::endl;
+  for (int i = 0; i < comslen; ++i) {
+    int pipefd[2];
+
+    /* MAKE PIPE FOR ALL COMMANDS EXCEPT LAST ONE */
+    if (i < comslen - 1) {
+      if (pipe(pipefd) == -1) {
+        std::cerr << "Pipe failed!" << std::endl;
+        return -1;
+      }
+    }
+
+    pid_t pid = fork();
+
+    if (pid == 0) {  /* CHILD */
+      /* INPUT STREAM */
+      if (input_fd != STDIN_FILENO) {
+        dup2(input_fd, STDIN_FILENO);
+        close(input_fd);
+      }
+
+      /* OUTPUT STREAM */
+      if (i < comslen - 1) {
+        close(pipefd[0]); /* CLOSE READING */
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[1]);
+      }
+
+      /* EXECUTE */
+      vec<char*> argv;
+      for (const auto& arg : coms[i]) {
+        argv.push_back(const_cast<char*>(arg.c_str()));
+      }
+      argv.push_back(nullptr);
+
+      execvp(argv[0], argv.data());
+      std::cerr << "Failed to execute: " << argv[0] << std::endl;
+      _exit(EXIT_FAILURE);
+
+    } else if (pid > 0) { /* PARENT */
+      pids.push_back(pid);
+
+      if (input_fd != STDIN_FILENO) /* CLOSE OLD input_fd */
+        close(input_fd);
+
+      /* CLOSE write end OF PIPE */
+      if (i < comslen - 1) {
+        close(pipefd[1]);
+        input_fd = pipefd[0]; /* NEXT COMMAND START READING FROM HERE */
+      }
+    } else {
+      std::cerr << "Fork failed!" << std::endl;
+      return -1;
+    }
   }
 
-  return 0;
+  /* WAIT ENDING OF PROCESS */
+  int last_status = 0;
+  for (pid_t pid : pids) {
+    int status;
+    waitpid(pid, &status, 0);
+    last_status = WEXITSTATUS(status);
+  }
+
+  return last_status;
 }
 
 /* HISTORY */
 #include <readline/history.h>
-int
+  int
 history(const char *histdir, size_t n=1000)
 {
   /* INIT */
