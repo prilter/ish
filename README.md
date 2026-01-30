@@ -7,3 +7,4 @@ history navigations with arrows
 ~, - shortcuts  
 history command  
 &&, ; separators  
+pipelines  
