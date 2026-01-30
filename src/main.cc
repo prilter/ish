@@ -15,7 +15,7 @@
 
 extern str           getcwd(void);
 extern str           gethm(void);
-extern vec<str>      split(char *s, char sep);
+extern vec<str>      split(const char *s, char sep);
 extern vec<vec<str>> split(vec<str> ss, str sep);
 extern str           rep(str s, const char *old, const char *new_);
 extern int           ex(const vec<str>&);
@@ -45,8 +45,7 @@ main(void)
 {
   /* INIT */
   vec<vec<str>> coms;
-  vec<str> clean_keywords;
-  str cwd, lastdir = ".";
+  str cwd = getcwd(), clean_keywords, lastdir = ".";
   char *inp;
 
   /* SETTINGS OF SIGNAL HANDLER */
@@ -57,19 +56,20 @@ main(void)
   sigaction(SIGINT, &sa, nullptr);
 
   read_history(HISTDIR);
-  for (cwd = getcwd();; cwd = getcwd()) {
+  for (;;cwd = getcwd()) {
     /* GET INPUT */
     inp = readline(CONV);
     if (!inp) {std::cout << "\n"; break;}  /* Ctrl+D */
-    if (*inp) {add_history(inp);} /* HISTORY */
+    if (*inp) {add_history(inp);}          /* HISTORY */
 
     /* GET CLEAN COMMAND */
-    clean_keywords = split(inp, ' '); free(inp);
-    for (str &s : clean_keywords) {
-      s = rep(s, "~", gethm().c_str()); /* ~ -> HOME variable */
-      s = rep(s, "-", lastdir.c_str()); /* - -> old directory */
-    }
-    coms = split(clean_keywords, "&&");
+    clean_keywords = inp; free(inp);
+    clean_keywords = rep(clean_keywords, "~", gethm().c_str()); /* ~ -> HOME variable */
+    clean_keywords = rep(clean_keywords, "-", lastdir.c_str()); /* ~ -> HOME variable */
+    clean_keywords = rep(clean_keywords, "; ", " && ");         /* ; -> && */
+    clean_keywords = rep(clean_keywords, ";", " && ");          /* ; -> && */
+
+    coms = split(split(clean_keywords.c_str(), ' '), "&&");
 
     /* RUN COMMANDS */
     for (vec<str> com : coms) {
@@ -77,7 +77,7 @@ main(void)
       if (com.size() == 0) continue;
 
       /* RUN */
-      if (com[0] == "cd")           {lastdir = getcwd(); cd((com.size() != 1) ? com[1]:gethm());}
+      if      (com[0] == "cd")      {lastdir = cwd; cd((com.size() != 1) ? com[1]:gethm());}
       else if (com[0] == "history") {if (com.size() > 1) history(HISTDIR, atoi(com[1].c_str())); else history(HISTDIR);}
       else if (com[0] == "exit")    {goto end;}
       else                          {ex(com);}

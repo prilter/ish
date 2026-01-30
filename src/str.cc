@@ -5,7 +5,7 @@
 #define str std::string
 
 vec<str> 
-split(char *s, char sep) 
+split(const char *s, char sep) 
 {
   vec<str> tokens;
   std::stringstream ss(s);
@@ -35,7 +35,12 @@ split(vec<str> ss, str sep)
 str
 rep(str s, const char *old, const char *new_)
 {
-  if (s.find(old) != str::npos)
-    s.replace(s.find(old), s.find(old) + strlen(old), new_);
+  size_t b;
+
+  for (;s.find(old) != str::npos;) {
+    b = s.find(old);
+    s.erase(b, strlen(old));
+    s.insert(b, new_);
+  }
   return s;
 }
